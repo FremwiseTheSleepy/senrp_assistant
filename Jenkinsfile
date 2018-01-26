@@ -11,6 +11,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing...'
+                bat 'python manage.py test'
                 echo 'Wrapping up Testing.'
             }
         }
