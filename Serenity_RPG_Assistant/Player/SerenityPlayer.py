@@ -5,9 +5,9 @@ import re
 def process_weapon_damage(weapon_config):
     weapon_damage_text = weapon_config.damage
     if "*" in weapon_damage_text:
-        while True:
-            dam_text = input("See manual for how to handle '*'. Enter total damage and damage type "
+        total_damage, dam_text = input("See manual for how to handle '*'. Enter total damage, damage type "
                                        "as 'S'tun, 'W'ound, or 'B'asic (or both)")
+
     else:
         dam_text = weapon_damage_text
         numeric_values = re.findall(r'\d+', weapon_damage_text)
@@ -98,7 +98,7 @@ class SerenityPlayer(RPPlayer):
         super(SerenityPlayer, self).__init__(player_name, character_name, age, description, stats, money, health)
 
     def __str__(self):
-        print_string = "Player Name: {}\nCharacter Name: {}\nAge: {}\nBackstory: {}\nCurrent Stats: {}".format(
+        print_string = "Player Name: {}\nCharacter Name: {}\nAge: {}\nBack-story: {}\nCurrent Stats: {}".format(
             self.player_name, self.character_name, self.age, self.description, self.get_stats())
         return print_string
 
@@ -203,4 +203,18 @@ class SerenityPlayer(RPPlayer):
 
 # TESTING
 if __name__ == "__main__":
-    pass
+    from Configuration.Serenity_Config import SerenityStats
+
+    bayek_stats = SerenityStats(strength=10, agility=6, vitality=6, alertness=8, intelligence=8, willpower=6)
+    bayek_health = HealthSystem(total_hitpoints=bayek_stats.vitality+bayek_stats.willpower,
+                                current_stun_damage=0,
+                                current_wound_damage=0)
+    bayek = SerenityPlayer(player_name="Andy",
+                           character_name="Bayek",
+                           age=28,
+                           description="Protect the weak",
+                           stats=bayek_stats,
+                           money=750,
+                           health=bayek_health)
+
+    print("Bayek's Health = {}".format(bayek_health))
