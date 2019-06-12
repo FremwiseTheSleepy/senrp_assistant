@@ -223,31 +223,19 @@ class Combat:
     """ Perform combat tasks and simulations """
 
     def __init__(self, hero, bad_guy=BadGuy("bg247b"), number_of_sims=100, print_all=False):
-        self.number_of_sims = number_of_sims
+        self.num_of_sims = number_of_sims
         self.hero = hero
         self.bad_guy = bad_guy
-        self.simulation_data = []
+        self.simulation_data = ""
         self.print_all = print_all
 
     def __str__(self):
         output_string = "Combat Results:\n"
         output_string += "{}".format(self.hero)
         output_string += "{}".format(self.bad_guy)
-        output_string += " Number of simulations: {}\n".format(self.number_of_sims)
+        output_string += " Number of simulations: {}\n".format(self.num_of_sims)
 
-        sample_data = "   "
-        if not self.print_all:
-            for sim in self.simulation_data:
-                sample_data = "   "
-                spacing_string = ",   "
-                for item in sim:
-                    sample_data += "{}{}".format(item, spacing_string)
-                if sample_data[-len(spacing_string):] == spacing_string:
-                    sample_data = sample_data[:-len(spacing_string)]
-        else:
-            for index, sim in enumerate(self.simulation_data):
-                sample_data += "{}: {}\n".format(index + 1, sim)
-        output_string += sample_data
+        output_string += self.simulation_data
         return output_string
 
     def run_simulation(self):
@@ -255,7 +243,6 @@ class Combat:
 
         :return:
         """
-        parry = 3  # change this value if no bad guy and want to try different parry value.
         edge_count = 0
         success_count = 0   # TODO: this is overestimating since it can't know hit value
         sauron_count = 0
@@ -263,8 +250,8 @@ class Combat:
         hit_count = 0
         damage_count = 0
         wound_count = 0
-        for sim in range(self.number_of_sims):
-            total_attack_value, number_of_successes, achieved_edge, special_feat_text = self.hero.perform_attack_roll()
+        for sim in range(self.num_of_sims):
+            attack_sum, tengwar_rolls, achieved_edge, special_feat_text = self.hero.perform_attack_roll()
 
             # Player only calculations
             if special_feat_text == "Gandalf":
@@ -273,41 +260,33 @@ class Combat:
             if special_feat_text == "Sauron":
                 sauron_count += 1
 
-            if self.bad_guy is None:
-                if total_attack_value >= (self.hero.stance + parry):  # base TN + parry value
-                    hit_count += 1
-                hit_percent_data = process_percentage("hit at parry {} %".format(parry), hit_count, (sim + 1))
+            tracking_data = self.calculate_hero_vs_bad_guy_combat_percents(
+                (attack_sum, special_feat_text, achieved_edge, tengwar_rolls),
+                (hit_count, success_count, edge_count, wound_count, damage_count))
+            hit_count, success_count, edge_count, wound_count, damage_count = tracking_data
 
-                success_count += number_of_successes
-                success_avg = process_percentage("Success avg (overestimate)", success_count, (sim + 1))
-
-                if achieved_edge:
-                    edge_count += 1
-                edge_percent = process_percentage("Edge %", edge_count, (sim + 1))
-
-                # not supported
-                wound_percent = "Wound % not available"
-
-            else:
-                out_percents, tracking_data = self.calculate_hero_vs_bad_guy_combat_percents(
-                    (total_attack_value, special_feat_text, achieved_edge, number_of_successes),
-                    (hit_count, success_count, edge_count, wound_count, damage_count),
-                    sim)
-                edge_percent, success_avg, hit_percent_data, wound_percent = out_percents
-                hit_count, success_count, edge_count, wound_count, damage_count = tracking_data
-
-            gandalf_percent = process_percentage("Gandalf %", gandalf_count, (sim + 1))
-            sauron_percent = process_percentage("Sauron %", sauron_count, (sim + 1))
-            damage_percent = process_percentage("Damage per attack", damage_count, (sim + 1) * 100)
-
-            # pack data outputs
-            attack_data = ()
             if self.print_all:
-                attack_data += total_attack_value, number_of_successes, achieved_edge, special_feat_text
-            attack_data += edge_percent, gandalf_percent, sauron_percent, hit_percent_data, \
-                wound_percent, success_avg, damage_percent
+                self.simulation_data += "{}: Atk: {}, # tengwars: {}, edge?: {}, G/S?: '{}'\n".format(sim+1,
+                                                                                                      attack_sum,
+                                                                                                      tengwar_rolls,
+                                                                                                      achieved_edge,
+                                                                                                      special_feat_text)
 
-            self.simulation_data.append(attack_data)
+        damage_percent = process_percentage("Damage per attack", damage_count, self.num_of_sims * 100)
+        hit_percent_data = process_percentage("Hit % against {}".format(self.bad_guy.name), hit_count, self.num_of_sims)
+        wound_percent = process_percentage("Wound %", wound_count, self.num_of_sims)
+        edge_percent = process_percentage("Edge %", edge_count, self.num_of_sims)
+        success_avg = process_percentage("Success avg", success_count, self.num_of_sims * 100)
+        gandalf_percent = process_percentage("Gandalf %", gandalf_count, self.num_of_sims)
+        sauron_percent = process_percentage("Sauron %", sauron_count, self.num_of_sims)
+
+        self.simulation_data += "   {}   {}   {}   {}   {}   {}   {}".format(damage_percent,
+                                                                             hit_percent_data,
+                                                                             wound_percent,
+                                                                             edge_percent,
+                                                                             success_avg,
+                                                                             gandalf_percent,
+                                                                             sauron_percent)
 
     def process_bad_guy_hit(self, attack_inputs, tracking_data):
         """
@@ -348,12 +327,11 @@ class Combat:
 
         return hit_count, success_count, edge_count, wound_count, damage_count
 
-    def calculate_hero_vs_bad_guy_combat_percents(self, attack_inputs, tracking_data, tests_so_far):
+    def calculate_hero_vs_bad_guy_combat_percents(self, attack_inputs, tracking_data):
         """
         
         :param attack_inputs: 
-        :param tracking_data: 
-        :param tests_so_far: 
+        :param tracking_data:
         :return: 
         """
         # unpack input data
@@ -364,16 +342,10 @@ class Combat:
         if total_attack_value >= self.bad_guy.calculate_defense(self.hero.stance) or special_feat_text == "Gandalf":
             # handle detected hit
             hits, successes, edges, wounds, damage = self.process_bad_guy_hit((is_edge, tengwar_rolls), tracking_data)
-
-        edge_percent = process_percentage("Edge %", edges, (tests_so_far + 1))
-        success_avg = process_percentage("Success avg", successes, (tests_so_far + 1) * 100)
-        hit_percent_data = process_percentage("Hit % against {}".format(self.bad_guy.name), hits, (tests_so_far + 1))
-        wound_percent = process_percentage("Wound %", wounds, (tests_so_far + 1))
         
         # pack up output data
-        percent_calculations = edge_percent, success_avg, hit_percent_data, wound_percent
         tracking_data = hits, successes, edges, wounds, damage
-        return percent_calculations, tracking_data
+        return tracking_data
 
 
 class Weapon(object):
@@ -414,15 +386,16 @@ if __name__ == "__main__":
     edge_mod = 0
     injury_mod = 0
     player_basic_body_score = 3
-    combat = Combat(number_of_sims=1000000,
+    combat = Combat(number_of_sims=100000,
                     hero=Hero("Dinonas Greenhand",
                               "Bow",
-                              weapon_success_dice=3,
-                              bonus_feat_rolls=0,
+                              weapon_success_dice=2,
+                              bonus_feat_rolls=1,
                               weapon_mods=WeaponStructure(damage_mod, edge_mod, injury_mod),
                               player_damage=player_basic_body_score,
                               player_stance=StanceTN.Def),
-                    bad_guy=BadGuy("bg247b"),
+                    bad_guy=BadGuy("bg245b"),
+                    print_all=False,
                     )
     combat.run_simulation()
     print(combat)
