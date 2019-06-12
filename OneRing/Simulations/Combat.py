@@ -1,0 +1,428 @@
+from random import randint
+from collections import namedtuple
+
+DEFAULT_NUM_FEAT_ROLLS = 1
+SAURON_FEAT_DIE_VALUE = 11
+GANDALF_FEAT_DIE_VALUE = 12
+
+WeaponStructure = namedtuple('WeaponStructure', 'damage edge injury')
+WeaponDatabase = {
+    'Dagger': WeaponStructure(damage=3, edge=GANDALF_FEAT_DIE_VALUE, injury=12),
+    'Short sword': WeaponStructure(damage=5, edge=10, injury=14),
+    'Sword': WeaponStructure(damage=5, edge=10, injury=16),
+    'Long sword (1h)': WeaponStructure(damage=5, edge=10, injury=16),
+    'Long sword (2h)': WeaponStructure(damage=7, edge=10, injury=18),
+    'Spear': WeaponStructure(damage=5, edge=9, injury=14),
+    'Great spear (2h)': WeaponStructure(damage=9, edge=9, injury=16),
+    'Axe': WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18),
+    'Great axe (2h)': WeaponStructure(damage=9, edge=GANDALF_FEAT_DIE_VALUE, injury=20),
+    'Long-hafted axe (1h)': WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18),
+    'Long-hafted axe (2h)': WeaponStructure(damage=7, edge=GANDALF_FEAT_DIE_VALUE, injury=20),
+    'Bow': WeaponStructure(damage=5, edge=10, injury=14),
+}
+
+BadGuyStructure = namedtuple('BadGuyStructure', 'attribute_level endurance hate parry armor')
+BadGuyDatabase = {
+    'bg237a': BadGuyStructure(attribute_level=7, endurance=48, hate=8, parry="5 + 2", armor="4dU"),
+    'bg238a': BadGuyStructure(attribute_level=4, endurance=18, hate=5, parry="4 + 0", armor="2d"),
+    'bg238b': BadGuyStructure(attribute_level=2, endurance=8,  hate=2, parry="3 + 0", armor="2d"),
+    'bg238c': BadGuyStructure(attribute_level=5, endurance=20, hate=4, parry="5 + 2", armor="2dU"),
+    'bg239a': BadGuyStructure(attribute_level=5, endurance=20, hate=5, parry="4 + 3", armor="3d"),
+    'bg240a': BadGuyStructure(attribute_level=3, endurance=12, hate=1, parry="3 + 1", armor="3d"),
+    'bg240b': BadGuyStructure(attribute_level=2, endurance=8,  hate=1, parry="2 + 0", armor="2d"),
+    'bg240c': BadGuyStructure(attribute_level=4, endurance=16, hate=3, parry="4 + 2", armor="2dU"),
+    'bg242a': BadGuyStructure(attribute_level=3, endurance=12, hate=2, parry="4 + 0", armor="2d"),
+    'bg242b': BadGuyStructure(attribute_level=4, endurance=36, hate=3, parry="5 + 0", armor="3d"),
+    'bg244a': BadGuyStructure(attribute_level=7, endurance=76, hate=8, parry="5 + 0", armor="3dU"),
+    'bg244b': BadGuyStructure(attribute_level=7, endurance=84, hate=7, parry="5 + 1", armor="3d"),
+    'bg244c': BadGuyStructure(attribute_level=8, endurance=90, hate=10, parry="6 + 1", armor="4d"),
+    'bg245a': BadGuyStructure(attribute_level=9, endurance=96, hate=9, parry="7 + 0", armor="4d"),
+    'bg245b': BadGuyStructure(attribute_level=6, endurance=72, hate=5, parry="5 + 0", armor="3d"),
+    'bg246a': BadGuyStructure(attribute_level=3, endurance=12, hate=1, parry="5 + 0", armor="2d"),
+    'bg247a': BadGuyStructure(attribute_level=5, endurance=16, hate=3, parry="6 + 0", armor="3d"),
+    'bg247b': BadGuyStructure(attribute_level=8, endurance=68, hate=12, parry="9 + 0", armor="4d"),
+    'bg248a': BadGuyStructure(attribute_level=6, endurance=20, hate=5, parry="6 + 0", armor="3d"),
+    'bg249a': BadGuyStructure(attribute_level=3, endurance=10, hate=2, parry="5 + 0", armor="2d"),
+    'bg249b': BadGuyStructure(attribute_level=5, endurance=35, hate=6, parry="7 + 0", armor="3d"),
+}
+
+
+class StanceTN:
+    Forward = 6
+    Open = 9
+    Def = 12  # Rearward = 12
+
+
+# General util functions
+def parse_numbers_from_string_to_list(string_to_parse):
+    """
+    Parse a string into a list of numbers: e.g. "This 1 string has 2 numbers." => [1,2]
+    :param string_to_parse: str, input string to parse
+    :return: list of ints, all numeric values found within string.
+    """
+    # parse string into parts, add integer value to list if determined to be integer
+    return [int(string_integer) for string_integer in string_to_parse.split() if string_integer.isdigit()]
+
+
+def process_percentage(name, count, total):
+    """
+    Returns str containing input string and the associated percentage based on count & total inputs.
+    :param name: str, contains text to indicate what percent means
+    :param count: numeric, numerator, i.e. number of "successes" out of all attempts
+    :param total: numeric, denominator, i.e. number of "attempts"
+    :return: str, text indicating what percent means followed by percent, separated by ':'
+    """
+    return "{}: {}".format(name, str(float(count) / total * 100))
+
+
+def roll_success_dice(number_of_dice, is_weary=False):
+    """
+    Rolls a number of success dice and returns the total sum of the dice rolls. Handles weary effects if specified.
+    :param number_of_dice: int, total number of success dice to roll
+    :param is_weary: Boolean, true when the weary effects should affect rolls, false otherwise
+    :return: int tuple, total summation of dice rolls (weary affected), number of successes (tengwar or '6' value rolls)
+    """
+    roll_summation = 0
+    number_of_successes = 0
+    for _ in range(number_of_dice):
+        single_roll_value = randint(1, 6)
+        if is_weary and single_roll_value <= 3:
+            single_roll_value = 0
+        roll_summation += single_roll_value
+        if single_roll_value == 6:
+            number_of_successes += 1
+    return roll_summation, number_of_successes
+
+
+class Character(object):
+    """ Base class for all PCs or NPCs """
+
+    def __init__(self, name):
+        self.name = name
+
+    def get_name(self):
+        return self.name
+
+
+class Hero(Character):
+    """ Perform tasks that hero can perform """
+
+    def __init__(self,
+                 name="",
+                 weapon_name="Bow",
+                 weapon_mods=(0, 0, 0),
+                 weapon_success_dice=2,
+                 bonus_feat_rolls=1,
+                 player_damage=0,
+                 player_stance=StanceTN.Def):
+
+        super(Hero, self).__init__(name)
+        self.weapon = Weapon(weapon_name, weapon_mods)
+        self.weapon_success_dice = weapon_success_dice
+        self.num_feat_rolls = DEFAULT_NUM_FEAT_ROLLS + bonus_feat_rolls
+        self.player_damage = player_damage
+        self.edge_value = self.weapon.edge
+        self.damage_value = self.weapon.damage
+        self.stance = player_stance
+
+    def __str__(self):
+        output_string = ""
+        output_string += " Hero:\n"
+        output_string += "   Name: {},   ".format(self.name)
+        output_string += "   Number of success dice: {},   ".format(self.weapon_success_dice)
+        output_string += "   Number of feat rolls: {}\n".format(self.num_feat_rolls)
+        output_string += "{}".format(self.weapon)
+        return output_string
+
+    def perform_attack_roll(self):
+        """
+        Performs feat and success rolls, determines if edge value was met/exceeded.
+        :return: tuple of total_attack_value, number_of_successes, achieved_edge, special_feat_text
+            total_attack_value, int, is the summation of all dice.
+            number of successes, int, is the number of  tengwar (6) rolls on success (1d6) dice.
+            achieved_edge, boolean, True when sum of rolls >= edge value (note, attack can miss, negating edge)
+            special_feat_text, str, "Gandalf" or "Sauron" if feat roll(s) indicate associated value, "" otherwise.
+        """
+        total_attack_value, number_of_successes = roll_success_dice(self.weapon_success_dice)
+
+        # perform feat roll(s), end result is a Sauron (failure, 0) only if all rolls are Sauron; add to success rolls
+        max_feat_roll = 0
+        for _ in range(self.num_feat_rolls):
+            feat_roll = randint(1, 12)
+            if feat_roll == SAURON_FEAT_DIE_VALUE:
+                feat_roll = 0
+            max_feat_roll = max(feat_roll, max_feat_roll)
+        total_attack_value += max_feat_roll
+
+        # determine whether special outcome (Gandalf/Sauron) occurred
+        special_feat_text = ""
+        if max_feat_roll == 0:
+            special_feat_text = "Sauron"
+        elif max_feat_roll == GANDALF_FEAT_DIE_VALUE:
+            special_feat_text = "Gandalf"
+
+        # check if edge was reached, this is a preliminary check
+        achieved_edge = False
+        if max_feat_roll >= self.edge_value:
+            achieved_edge = True
+
+        return total_attack_value, number_of_successes, achieved_edge, special_feat_text
+
+
+class BadGuy(Character):
+    """ Perform tasks that bad guys can perform
+    @type parry: str
+    @type armor: str
+    """
+    def __init__(self, name):
+        super(BadGuy, self).__init__(name)
+        bad_guy_data = BadGuyDatabase.get(self.name)
+        if bad_guy_data:
+            self.attribute_level, self.endurance, self.hate, self.parry, self.armor = bad_guy_data
+        else:
+            self.attribute_level = 0
+            self.endurance = 0
+            self.hate = 0
+            self.parry = 0
+            self.armor = 0
+
+    def __str__(self):
+        out_string = " Bad Guy:\n"
+        out_string += "   Name: {},  ".format(self.name)
+        out_string += "Parry: {},  ".format(self.parry)
+        out_string += "Armor: {},  ".format(self.armor)
+        out_string += "Endurance: {},  ".format(self.endurance)
+        out_string += "Attribute level: {}\n".format(self.attribute_level)
+        return out_string
+
+    def get_parry(self, shield_present):
+        parry_values = parse_numbers_from_string_to_list(self.parry)
+        parry_output = parry_values[0]
+        if shield_present and len(parry_values) == 2:
+            parry_output += parry_values[1]
+        return parry_output
+
+    def calculate_defense(self, incoming_tn, shield_present=True):
+        parry_value = incoming_tn + self.get_parry(shield_present)
+        return parry_value
+
+    def calculate_armor(self):
+        armor_parse = self.armor.split('d')
+        armor_dice = int(armor_parse[0])
+
+        armor_value = 0
+        for _ in range(armor_dice):
+            armor_value += randint(1, 6)
+
+        if armor_parse[-1].upper() == 'U':
+            armor_value += self.attribute_level
+        return armor_value
+
+
+class Combat:
+    """ Perform combat tasks and simulations """
+
+    def __init__(self, hero, bad_guy=BadGuy("bg247b"), number_of_sims=100, print_all=False):
+        self.number_of_sims = number_of_sims
+        self.hero = hero
+        self.bad_guy = bad_guy
+        self.simulation_data = []
+        self.print_all = print_all
+
+    def __str__(self):
+        output_string = "Combat Results:\n"
+        output_string += "{}".format(self.hero)
+        output_string += "{}".format(self.bad_guy)
+        output_string += " Number of simulations: {}\n".format(self.number_of_sims)
+
+        sample_data = "   "
+        if not self.print_all:
+            for sim in self.simulation_data:
+                sample_data = "   "
+                spacing_string = ",   "
+                for item in sim:
+                    sample_data += "{}{}".format(item, spacing_string)
+                if sample_data[-len(spacing_string):] == spacing_string:
+                    sample_data = sample_data[:-len(spacing_string)]
+        else:
+            for index, sim in enumerate(self.simulation_data):
+                sample_data += "{}: {}\n".format(index + 1, sim)
+        output_string += sample_data
+        return output_string
+
+    def run_simulation(self):
+        """
+
+        :return:
+        """
+        parry = 3  # change this value if no bad guy and want to try different parry value.
+        edge_count = 0
+        success_count = 0   # TODO: this is overestimating since it can't know hit value
+        sauron_count = 0
+        gandalf_count = 0
+        hit_count = 0
+        damage_count = 0
+        wound_count = 0
+        for sim in range(self.number_of_sims):
+            total_attack_value, number_of_successes, achieved_edge, special_feat_text = self.hero.perform_attack_roll()
+
+            # Player only calculations
+            if special_feat_text == "Gandalf":
+                gandalf_count += 1
+
+            if special_feat_text == "Sauron":
+                sauron_count += 1
+
+            if self.bad_guy is None:
+                if total_attack_value >= (self.hero.stance + parry):  # base TN + parry value
+                    hit_count += 1
+                hit_percent_data = process_percentage("hit at parry {} %".format(parry), hit_count, (sim + 1))
+
+                success_count += number_of_successes
+                success_avg = process_percentage("Success avg (overestimate)", success_count, (sim + 1))
+
+                if achieved_edge:
+                    edge_count += 1
+                edge_percent = process_percentage("Edge %", edge_count, (sim + 1))
+
+                # not supported
+                wound_percent = "Wound % not available"
+
+            else:
+                out_percents, tracking_data = self.calculate_hero_vs_bad_guy_combat_percents(
+                    (total_attack_value, special_feat_text, achieved_edge, number_of_successes),
+                    (hit_count, success_count, edge_count, wound_count, damage_count),
+                    sim)
+                edge_percent, success_avg, hit_percent_data, wound_percent = out_percents
+                hit_count, success_count, edge_count, wound_count, damage_count = tracking_data
+
+            gandalf_percent = process_percentage("Gandalf %", gandalf_count, (sim + 1))
+            sauron_percent = process_percentage("Sauron %", sauron_count, (sim + 1))
+            damage_percent = process_percentage("Damage per attack", damage_count, (sim + 1) * 100)
+
+            # pack data outputs
+            attack_data = ()
+            if self.print_all:
+                attack_data += total_attack_value, number_of_successes, achieved_edge, special_feat_text
+            attack_data += edge_percent, gandalf_percent, sauron_percent, hit_percent_data, \
+                wound_percent, success_avg, damage_percent
+
+            self.simulation_data.append(attack_data)
+
+    def process_bad_guy_hit(self, attack_inputs, tracking_data):
+        """
+        Perform tracking updates after successful hit on bad guy
+        :param attack_inputs: bool and int iterator, did the attack reach the weapon's edge, number of tengwar, 6, rolls
+        :param tracking_data: iterator, hit, success, edge, wound, damage counts, these are all input/output in function
+        :return: iterator, hit, success, edge, wound, damage counts; calculated values against bad guy
+        """
+        achieved_edge, number_of_successes = attack_inputs
+        hit_count, success_count, edge_count, wound_count, damage_count = tracking_data
+        # handle detected hit
+        hit_count += 1
+
+        # update tracking for hit and damage, calculate it temporarily to perform endurance clamping
+        temp_damage = self.hero.weapon.damage
+
+        # update damage based on number of successes
+        success_count += number_of_successes
+        if success_count == 1:
+            temp_damage += self.hero.player_damage
+        elif success_count >= 2:
+            temp_damage += self.hero.player_damage * 2
+
+        if achieved_edge:
+            # roll indicates edge achieved, determine if wound occurred
+            edge_count += 1
+            armor = self.bad_guy.calculate_armor()
+            if self.hero.weapon.injury >= armor:
+                wound_count += 1
+                # TODO: This is artificially high, need battle sim to calculate remaining endurance
+                temp_damage = self.bad_guy.endurance
+
+        # clamp total damage to bad guy's endurance (levels out wounding damage per turn value)
+        if temp_damage > self.bad_guy.endurance:
+            temp_damage = self.bad_guy.endurance
+        # update damage tracking value
+        damage_count += temp_damage
+
+        return hit_count, success_count, edge_count, wound_count, damage_count
+
+    def calculate_hero_vs_bad_guy_combat_percents(self, attack_inputs, tracking_data, tests_so_far):
+        """
+        
+        :param attack_inputs: 
+        :param tracking_data: 
+        :param tests_so_far: 
+        :return: 
+        """
+        # unpack input data
+        total_attack_value, special_feat_text, is_edge, tengwar_rolls = attack_inputs
+        hits, successes, edges, wounds, damage = tracking_data
+
+        # check for hit, either gandalf or attack is greater than defender's TN + parry
+        if total_attack_value >= self.bad_guy.calculate_defense(self.hero.stance) or special_feat_text == "Gandalf":
+            # handle detected hit
+            hits, successes, edges, wounds, damage = self.process_bad_guy_hit((is_edge, tengwar_rolls), tracking_data)
+
+        edge_percent = process_percentage("Edge %", edges, (tests_so_far + 1))
+        success_avg = process_percentage("Success avg", successes, (tests_so_far + 1) * 100)
+        hit_percent_data = process_percentage("Hit % against {}".format(self.bad_guy.name), hits, (tests_so_far + 1))
+        wound_percent = process_percentage("Wound %", wounds, (tests_so_far + 1))
+        
+        # pack up output data
+        percent_calculations = edge_percent, success_avg, hit_percent_data, wound_percent
+        tracking_data = hits, successes, edges, wounds, damage
+        return percent_calculations, tracking_data
+
+
+class Weapon(object):
+    """ Weapon initialization and upgrade handling """
+    def __init__(self, name, weapon_mods=WeaponStructure(damage=0, edge=0, injury=0)):
+
+        self.name = name
+        base_weapon_attributes = WeaponDatabase.get(self.name)
+        if base_weapon_attributes:
+            self.base_damage, self.base_edge, self.base_injury = base_weapon_attributes
+        else:
+            print("Selected weapon of name: {}, not yet supported!".format(self.name))
+            self.base_damage = 0
+            self.base_edge = 0
+            self.base_injury = 0
+        self.damage = self.base_damage + weapon_mods.damage
+        self.injury = self.base_injury + weapon_mods.injury
+        # Edge is subtractive and has a gap between Gandalf and Sauron; handle both +1 and -1 as subtracting 1.
+        if self.base_edge == 12 and weapon_mods.edge >= 1:
+            weapon_mods.edge = abs(weapon_mods.edge) + 1
+        self.edge = self.base_edge - abs(weapon_mods.edge)
+
+    def __str__(self):
+        out_text = "   Weapon:\n"
+        out_text += "     Name: {},   ".format(self.name)
+        out_text += "Damage: {} ({} + {}),   ".format(self.damage, self.base_damage, (self.damage - self.base_damage))
+        out_text += "Injury: {} ({} + {}),   ".format(self.injury, self.base_injury, (self.injury - self.base_injury))
+        # Edge is subtractive and has a gap between Gandalf and Sauron; output rationale for extra subtraction
+        if self.base_edge == 12 and self.edge != self.base_edge:
+            out_text += "Edge: {} (12 - {} - 1*  (*11 not used))\n".format(self.edge, (self.base_edge-self.edge-1))
+        else:
+            out_text += "Edge: {} ({} - {})\n".format(self.edge, self.base_edge, (self.base_edge - self.edge))
+        return out_text
+
+
+if __name__ == "__main__":
+    damage_mod = 0
+    edge_mod = 0
+    injury_mod = 0
+    player_basic_body_score = 3
+    combat = Combat(number_of_sims=1000000,
+                    hero=Hero("Dinonas Greenhand",
+                              "Bow",
+                              weapon_success_dice=3,
+                              bonus_feat_rolls=0,
+                              weapon_mods=WeaponStructure(damage_mod, edge_mod, injury_mod),
+                              player_damage=player_basic_body_score,
+                              player_stance=StanceTN.Def),
+                    bad_guy=BadGuy("bg247b"),
+                    )
+    combat.run_simulation()
+    print(combat)
