@@ -1,28 +1,36 @@
 from random import randint
 from collections import namedtuple
 
+# Readme: For general usage, go to bottom of file and modify values, run via "python Combat.py"
+# tested on python 3.6.1
+
+VERSION = "0.1"
+
 DEFAULT_NUM_FEAT_ROLLS = 1
 SAURON_FEAT_DIE_VALUE = 11
 GANDALF_FEAT_DIE_VALUE = 12
 
 WeaponStructure = namedtuple('WeaponStructure', 'damage edge injury hit_bonus')
 WeaponDatabase = {
-    'Dagger': WeaponStructure(damage=3, edge=GANDALF_FEAT_DIE_VALUE, injury=12, hit_bonus=0),
-    'Short sword': WeaponStructure(damage=5, edge=10, injury=14, hit_bonus=0),
-    'Sword': WeaponStructure(damage=5, edge=10, injury=16, hit_bonus=0),
-    'Long sword (1h)': WeaponStructure(damage=5, edge=10, injury=16, hit_bonus=0),
-    'Long sword (2h)': WeaponStructure(damage=7, edge=10, injury=18, hit_bonus=0),
-    'Spear': WeaponStructure(damage=5, edge=9, injury=14, hit_bonus=0),
-    'Great spear (2h)': WeaponStructure(damage=9, edge=9, injury=16, hit_bonus=0),
-    'Axe': WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18, hit_bonus=0),
-    'Great axe (2h)': WeaponStructure(damage=9, edge=GANDALF_FEAT_DIE_VALUE, injury=20, hit_bonus=0),
+    'Dagger':               WeaponStructure(damage=3, edge=GANDALF_FEAT_DIE_VALUE, injury=12, hit_bonus=0),
+    'Short sword':          WeaponStructure(damage=5, edge=10, injury=14, hit_bonus=0),
+    'Sword':                WeaponStructure(damage=5, edge=10, injury=16, hit_bonus=0),
+    'Long sword (1h)':      WeaponStructure(damage=5, edge=10, injury=16, hit_bonus=0),
+    'Long sword (2h)':      WeaponStructure(damage=7, edge=10, injury=18, hit_bonus=0),
+    'Spear':                WeaponStructure(damage=5, edge=9, injury=14, hit_bonus=0),
+    'Great spear (2h)':     WeaponStructure(damage=9, edge=9, injury=16, hit_bonus=0),
+    'Axe':                  WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18, hit_bonus=0),
+    'Great axe (2h)':       WeaponStructure(damage=9, edge=GANDALF_FEAT_DIE_VALUE, injury=20, hit_bonus=0),
     'Long-hafted axe (1h)': WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18, hit_bonus=0),
     'Long-hafted axe (2h)': WeaponStructure(damage=7, edge=GANDALF_FEAT_DIE_VALUE, injury=20, hit_bonus=0),
-    'Bow': WeaponStructure(damage=5, edge=10, injury=14, hit_bonus=0),
+    'Bow':                  WeaponStructure(damage=5, edge=10, injury=14, hit_bonus=0),
 }
 
 BadGuyStructure = namedtuple('BadGuyStructure', 'attribute_level endurance hate parry armor')
 BadGuyDatabase = {
+    # names are taken from page numbers + general location in page top left is a, bottom right b, c, etc.
+    # for parry, use string, one char by itself will assume no shield, specified '+ 0' mostly for readability
+    # for armor, U means that attribute bonus is added to protection check
     'bg237a': BadGuyStructure(attribute_level=7, endurance=48, hate=8, parry="5 + 2", armor="4dU"),
     'bg238a': BadGuyStructure(attribute_level=4, endurance=18, hate=5, parry="4 + 0", armor="2d"),
     'bg238b': BadGuyStructure(attribute_level=2, endurance=8,  hate=2, parry="3 + 0", armor="2d"),
@@ -111,7 +119,7 @@ class Hero(Character):
     def __init__(self,
                  name="",
                  weapon_name="Bow",
-                 weapon_mods=(0, 0, 0, 0),
+                 weapon_mods=WeaponStructure(0, 0, 0, 0),
                  weapon_success_dice=2,
                  bonus_feat_rolls=1,
                  player_damage=0,
@@ -383,7 +391,7 @@ class Weapon(object):
         out_text += "Damage: {} ({} + {}),   ".format(self.damage, self.base_damage, (self.damage - self.base_damage))
         out_text += "Injury: {} ({} + {}),   ".format(self.injury, self.base_injury, (self.injury - self.base_injury))
         # Edge is subtractive and has a gap between Gandalf and Sauron; output rationale for extra subtraction
-        if self.base_edge == 12 and self.edge != self.base_edge:
+        if self.base_edge == GANDALF_FEAT_DIE_VALUE and self.edge != self.base_edge:
             out_text += "Edge: {} (12 - {} - 1*  (*11 not used))   ".format(self.edge, (self.base_edge-self.edge-1))
         else:
             out_text += "Edge: {} ({} - {})   ".format(self.edge, self.base_edge, (self.base_edge - self.edge))
@@ -393,8 +401,8 @@ class Weapon(object):
 
 
 if __name__ == "__main__":
-
-    # edit here
+    # TODO: make a (better) command line interface
+    # edit here for now
     weapon_type = "Bow"         # Select text from WeaponDatabase
     bad_guy_name = "bg245b"     # select from BadGuyDatabase
     damage_mod = 0              # e.g. Grievous = 2 (reward, pg 116, e-book)
@@ -421,4 +429,6 @@ if __name__ == "__main__":
                     print_all=False,
                     )
     combat.run_simulation()
+    print("Version: combat sim: {}".format(VERSION))
     print(combat)
+
