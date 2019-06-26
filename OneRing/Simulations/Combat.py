@@ -80,7 +80,7 @@ def process_percentage(name, count, total):
     :param total: numeric, denominator, i.e. number of "attempts"
     :return: str, text indicating what percent means followed by percent, separated by ':'
     """
-    return "{}: {}".format(name, str(float(count) / total * 100))
+    return "{}: {}".format(name, str(round(float(count) / total * 100, 3)))
 
 
 def roll_success_dice(number_of_dice, is_weary=False):
