@@ -5,20 +5,20 @@ DEFAULT_NUM_FEAT_ROLLS = 1
 SAURON_FEAT_DIE_VALUE = 11
 GANDALF_FEAT_DIE_VALUE = 12
 
-WeaponStructure = namedtuple('WeaponStructure', 'damage edge injury')
+WeaponStructure = namedtuple('WeaponStructure', 'damage edge injury hit_bonus')
 WeaponDatabase = {
-    'Dagger': WeaponStructure(damage=3, edge=GANDALF_FEAT_DIE_VALUE, injury=12),
-    'Short sword': WeaponStructure(damage=5, edge=10, injury=14),
-    'Sword': WeaponStructure(damage=5, edge=10, injury=16),
-    'Long sword (1h)': WeaponStructure(damage=5, edge=10, injury=16),
-    'Long sword (2h)': WeaponStructure(damage=7, edge=10, injury=18),
-    'Spear': WeaponStructure(damage=5, edge=9, injury=14),
-    'Great spear (2h)': WeaponStructure(damage=9, edge=9, injury=16),
-    'Axe': WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18),
-    'Great axe (2h)': WeaponStructure(damage=9, edge=GANDALF_FEAT_DIE_VALUE, injury=20),
-    'Long-hafted axe (1h)': WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18),
-    'Long-hafted axe (2h)': WeaponStructure(damage=7, edge=GANDALF_FEAT_DIE_VALUE, injury=20),
-    'Bow': WeaponStructure(damage=5, edge=10, injury=14),
+    'Dagger': WeaponStructure(damage=3, edge=GANDALF_FEAT_DIE_VALUE, injury=12, hit_bonus=0),
+    'Short sword': WeaponStructure(damage=5, edge=10, injury=14, hit_bonus=0),
+    'Sword': WeaponStructure(damage=5, edge=10, injury=16, hit_bonus=0),
+    'Long sword (1h)': WeaponStructure(damage=5, edge=10, injury=16, hit_bonus=0),
+    'Long sword (2h)': WeaponStructure(damage=7, edge=10, injury=18, hit_bonus=0),
+    'Spear': WeaponStructure(damage=5, edge=9, injury=14, hit_bonus=0),
+    'Great spear (2h)': WeaponStructure(damage=9, edge=9, injury=16, hit_bonus=0),
+    'Axe': WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18, hit_bonus=0),
+    'Great axe (2h)': WeaponStructure(damage=9, edge=GANDALF_FEAT_DIE_VALUE, injury=20, hit_bonus=0),
+    'Long-hafted axe (1h)': WeaponStructure(damage=5, edge=GANDALF_FEAT_DIE_VALUE, injury=18, hit_bonus=0),
+    'Long-hafted axe (2h)': WeaponStructure(damage=7, edge=GANDALF_FEAT_DIE_VALUE, injury=20, hit_bonus=0),
+    'Bow': WeaponStructure(damage=5, edge=10, injury=14, hit_bonus=0),
 }
 
 BadGuyStructure = namedtuple('BadGuyStructure', 'attribute_level endurance hate parry armor')
@@ -97,8 +97,9 @@ def roll_success_dice(number_of_dice, is_weary=False):
 class Character(object):
     """ Base class for all PCs or NPCs """
 
-    def __init__(self, name):
+    def __init__(self, name, stance=StanceTN.Def):
         self.name = name
+        self.stance = stance
 
     def get_name(self):
         return self.name
@@ -110,20 +111,19 @@ class Hero(Character):
     def __init__(self,
                  name="",
                  weapon_name="Bow",
-                 weapon_mods=(0, 0, 0),
+                 weapon_mods=(0, 0, 0, 0),
                  weapon_success_dice=2,
                  bonus_feat_rolls=1,
                  player_damage=0,
-                 player_stance=StanceTN.Def):
+                 stance=StanceTN.Def):
 
-        super(Hero, self).__init__(name)
+        super(Hero, self).__init__(name, stance=stance)
         self.weapon = Weapon(weapon_name, weapon_mods)
         self.weapon_success_dice = weapon_success_dice
         self.num_feat_rolls = DEFAULT_NUM_FEAT_ROLLS + bonus_feat_rolls
         self.player_damage = player_damage
         self.edge_value = self.weapon.edge
         self.damage_value = self.weapon.damage
-        self.stance = player_stance
 
     def __str__(self):
         output_string = ""
@@ -166,6 +166,9 @@ class Hero(Character):
         if max_feat_roll >= self.edge_value:
             achieved_edge = True
 
+        # if weapon adds hit bonus add in now.
+        total_attack_value += self.weapon.hit_bonus
+
         return total_attack_value, number_of_successes, achieved_edge, special_feat_text
 
 
@@ -192,6 +195,7 @@ class BadGuy(Character):
         out_string += "Parry: {},  ".format(self.parry)
         out_string += "Armor: {},  ".format(self.armor)
         out_string += "Endurance: {},  ".format(self.endurance)
+        out_string += "Stance TN: {},  ".format(self.stance)
         out_string += "Attribute level: {}\n".format(self.attribute_level)
         return out_string
 
@@ -316,7 +320,8 @@ class Combat:
             armor = self.bad_guy.calculate_armor()
             if self.hero.weapon.injury >= armor:
                 wound_count += 1
-                # TODO: This is artificially high, need battle sim to calculate remaining endurance
+                # TODO: This is artificially high (assumes player always attacks fresh bad guy,
+                # need battle sim to calculate remaining endurance
                 temp_damage = self.bad_guy.endurance
 
         # clamp total damage to bad guy's endurance (levels out wounding damage per turn value)
@@ -350,23 +355,27 @@ class Combat:
 
 class Weapon(object):
     """ Weapon initialization and upgrade handling """
-    def __init__(self, name, weapon_mods=WeaponStructure(damage=0, edge=0, injury=0)):
+    def __init__(self, name, weapon_mods=WeaponStructure(damage=0, edge=0, injury=0, hit_bonus=0)):
 
         self.name = name
         base_weapon_attributes = WeaponDatabase.get(self.name)
+
         if base_weapon_attributes:
-            self.base_damage, self.base_edge, self.base_injury = base_weapon_attributes
+            self.base_damage, self.base_edge, self.base_injury, self.hit_bonus = base_weapon_attributes
         else:
             print("Selected weapon of name: {}, not yet supported!".format(self.name))
             self.base_damage = 0
             self.base_edge = 0
             self.base_injury = 0
+            self.hit_bonus = 0
+
         self.damage = self.base_damage + weapon_mods.damage
         self.injury = self.base_injury + weapon_mods.injury
         # Edge is subtractive and has a gap between Gandalf and Sauron; handle both +1 and -1 as subtracting 1.
         if self.base_edge == 12 and weapon_mods.edge >= 1:
             weapon_mods.edge = abs(weapon_mods.edge) + 1
         self.edge = self.base_edge - abs(weapon_mods.edge)
+        self.hit_bonus += weapon_mods.hit_bonus
 
     def __str__(self):
         out_text = "   Weapon:\n"
@@ -375,26 +384,40 @@ class Weapon(object):
         out_text += "Injury: {} ({} + {}),   ".format(self.injury, self.base_injury, (self.injury - self.base_injury))
         # Edge is subtractive and has a gap between Gandalf and Sauron; output rationale for extra subtraction
         if self.base_edge == 12 and self.edge != self.base_edge:
-            out_text += "Edge: {} (12 - {} - 1*  (*11 not used))\n".format(self.edge, (self.base_edge-self.edge-1))
+            out_text += "Edge: {} (12 - {} - 1*  (*11 not used))   ".format(self.edge, (self.base_edge-self.edge-1))
         else:
-            out_text += "Edge: {} ({} - {})\n".format(self.edge, self.base_edge, (self.base_edge - self.edge))
+            out_text += "Edge: {} ({} - {})   ".format(self.edge, self.base_edge, (self.base_edge - self.edge))
+        out_text += "Hit Bonus: {}   ".format(self.hit_bonus)
+        out_text += "\n"
         return out_text
 
 
 if __name__ == "__main__":
-    damage_mod = 0
-    edge_mod = 0
-    injury_mod = 0
-    player_basic_body_score = 3
+
+    # edit here
+    weapon_type = "Bow"         # Select text from WeaponDatabase
+    bad_guy_name = "bg245b"     # select from BadGuyDatabase
+    damage_mod = 0              # e.g. Grievous = 2 (reward, pg 116, e-book)
+    edge_mod = 0                # e.g. Keen = 1 (reward)
+    injury_mod = 0              # e.g. Fell = 2 (reward)
+    hit_mod = 0                 # e.g. Bow of the North Downs (bow), 3 (more if valor higher)
+    player_basic_body = 3       # adds bonus damage for great/extraordinary successes
+    num_success_dice = 2        # skill / success dice of the weapon
+    extra_feat_rolls = 0        # e.g. fair shot = 1 (virtue)
+    pc_stance = StanceTN.Def    # stance player character is in, affects hit rate (if rearward, use "def")
+
     combat = Combat(number_of_sims=100000,
-                    hero=Hero("Dinonas Greenhand",
-                              "Bow",
-                              weapon_success_dice=2,
-                              bonus_feat_rolls=1,
-                              weapon_mods=WeaponStructure(damage_mod, edge_mod, injury_mod),
-                              player_damage=player_basic_body_score,
-                              player_stance=StanceTN.Def),
-                    bad_guy=BadGuy("bg245b"),
+                    hero=Hero("Ikari Shinji",
+                              weapon_type,
+                              weapon_success_dice=num_success_dice,
+                              bonus_feat_rolls=extra_feat_rolls,
+                              weapon_mods=WeaponStructure(damage=damage_mod,
+                                                          edge=edge_mod,
+                                                          injury=injury_mod,
+                                                          hit_bonus=hit_mod),
+                              player_damage=player_basic_body,
+                              stance=pc_stance),
+                    bad_guy=BadGuy(bad_guy_name),
                     print_all=False,
                     )
     combat.run_simulation()
