@@ -1,7 +1,7 @@
 
 # How to Work It
 Running:
-  * Navigate to directory file is in within a command line
+  * Navigate to "[this](https://github.com/FremwiseTheSleepy/senrp_assistant)" directory within a command line
     * type *python rpg_assistant.py*
   * Output should be printed to command line in a somewhat readable fashion
 
@@ -10,9 +10,9 @@ Making modifications:
  * Navigate to bottom of page
     * Ctrl + end
  * Find *edit here* location after *__name__ == "__main__"* check
- * Make associated edits here or to the bad guy or weapon databases
-    * weapon database should't need modifications since weapon modifiers are available, but could add new weapons 
-    * bad guy database populated from books
+ * Make associated edits here or to the bad guy or weapon databases. Check imports for locations.
+    * Weapon database should't need modifications since weapon modifiers are available, but could add new weapons 
+    * Bad guy database populated from books
 
 
 # Planned Folder Structure
@@ -28,3 +28,6 @@ Making modifications:
 - Render
 - Configurations - with each item, such as HP, indicate how to place visually.
     
+# TODO:
+- make interfaces that make sense and don't pull in specifics
+- tk-inter gration
