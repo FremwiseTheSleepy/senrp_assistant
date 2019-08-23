@@ -9,7 +9,7 @@ Making modifications:
  * Open rpg_assistant.py in editor (recommend pycharm)
  * Navigate to bottom of page
     * Ctrl + end
- * Find *edit here* location after *__name__ == "__main__"* check
+ * Find *edit here* location after *\_\_name__ == "\_\_main__"* check
  * Make associated edits here or to the bad guy or weapon databases. Check imports for locations.
     * Weapon database should't need modifications since weapon modifiers are available, but could add new weapons 
     * Bad guy database populated from books
