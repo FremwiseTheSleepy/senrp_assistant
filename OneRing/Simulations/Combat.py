@@ -1,5 +1,5 @@
-from Configuration.OneRing import process_percentage
-from Character.BadGuy.BadGuy import BadGuy
+from OneRing.Confinguration.OneRing import process_percentage
+from OneRing.Character.BadGuy.BadGuy import BadGuy
 
 # Readme: For general usage, go to bottom of file and modify values, run via "python Combat.py"
 # tested on python 3.6.1
@@ -41,7 +41,7 @@ class Combat:
         for sim in range(self.num_of_sims):
             attack_sum, tengwar_rolls, achieved_edge, special_feat_text = self.hero.perform_attack_roll()
 
-            # Player only calculations
+            # Character only calculations
             if special_feat_text == "Gandalf":
                 gandalf_count += 1
 

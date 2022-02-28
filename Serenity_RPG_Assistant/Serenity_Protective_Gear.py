@@ -1,4 +1,4 @@
-from Configuration.Serenity_Config import SerenityArmor, SerenityStats
+from Serenity_RPG_Assistant.Serenity_Config import SerenityArmor, SerenityStats
 
 
 serenity_armor = {

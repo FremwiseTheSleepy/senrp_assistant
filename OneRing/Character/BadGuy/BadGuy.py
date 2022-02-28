@@ -1,7 +1,7 @@
 from collections import namedtuple
 from random import randint
-from Character.Character import Character
-from Configuration.OneRing import StanceTN, parse_numbers_from_string_to_list
+from Player.Player import Player
+from OneRing.Confinguration.OneRing import StanceTN, parse_numbers_from_string_to_list
 
 BadGuyStructure = namedtuple('BadGuyStructure', 'attribute_level endurance hate parry armor')
 BadGuyDatabase = {
@@ -32,7 +32,7 @@ BadGuyDatabase = {
 }
 
 
-class BadGuy(Character):
+class BadGuy(Player):
     """ Perform tasks that bad guys can perform
     @type parry: str
     @type armor: str

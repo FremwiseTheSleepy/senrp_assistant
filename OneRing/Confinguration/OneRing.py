@@ -65,4 +65,4 @@ def process_percentage(name, count, total):
     :param total: numeric, denominator, i.e. number of "attempts"
     :return: str, text indicating what percent means followed by percent, separated by ':'
     """
-    return "{}: {}".format(name, str(float(count) / total * 100))
+    return "{}: {:0.3f}".format(name, float(count) / total * 100)

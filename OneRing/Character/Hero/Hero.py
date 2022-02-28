@@ -1,12 +1,12 @@
 from random import randint
-from Character.Character import Character
-from Configuration.OneRing import GANDALF_FEAT_DIE_VALUE, SAURON_FEAT_DIE_VALUE, DEFAULT_NUM_FEAT_ROLLS, StanceTN, \
+from Player.Player import Player
+from OneRing.Confinguration.OneRing import GANDALF_FEAT_DIE_VALUE, SAURON_FEAT_DIE_VALUE, DEFAULT_NUM_FEAT_ROLLS, StanceTN, \
     roll_success_dice
-from Equipment.Weapon import WeaponStructure
-from Equipment.Weapon import Weapon
+from OneRing.Equipment.Weapon import WeaponStructure
+from OneRing.Equipment.Weapon import Weapon
 
 
-class Hero(Character):
+class Hero(Player):
     """ Perform tasks that hero can perform """
 
     def __init__(self,

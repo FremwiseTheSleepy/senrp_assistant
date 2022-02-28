@@ -1,5 +1,5 @@
-from Configuration.Serenity_Config import asset_complication_config, SerenityTraitLevel, serenity_bonus_modifier, \
-    SerenityStats, SerenitySkills
+from Serenity_RPG_Assistant.Serenity_Config import asset_complication_config, \
+    SerenityTraitLevel, serenity_bonus_modifier, SerenityStats, SerenitySkills
 
 
 serenity_assets = {

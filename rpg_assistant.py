@@ -1,7 +1,7 @@
-from ActionInterface.Simulations.Combat import Combat, VERSION
-from Configuration.OneRing import WeaponStructure, StanceTN
-from Character.Hero.Hero import Hero
-from Character.BadGuy.BadGuy import BadGuy
+from OneRing.Simulations.Combat import Combat, VERSION
+from OneRing.Confinguration.OneRing import WeaponStructure, StanceTN
+from OneRing.Character.Hero.Hero import Hero
+from OneRing.Character.BadGuy.BadGuy import BadGuy
 
 
 if __name__ == "__main__":

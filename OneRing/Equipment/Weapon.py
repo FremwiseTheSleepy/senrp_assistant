@@ -1,5 +1,5 @@
 
-from Configuration.OneRing import WeaponStructure, WeaponDatabase, GANDALF_FEAT_DIE_VALUE
+from OneRing.Confinguration.OneRing import WeaponStructure, WeaponDatabase, GANDALF_FEAT_DIE_VALUE
 
 
 class Weapon(object):

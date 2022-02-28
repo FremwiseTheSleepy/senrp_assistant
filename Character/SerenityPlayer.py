@@ -1,4 +1,4 @@
-from Player.RPPlayer import RPPlayer
+from Character.Character import Character
 import re
 
 
@@ -87,7 +87,7 @@ class HealthSystem(object):
         return print_string
 
 
-class SerenityPlayer(RPPlayer):
+class SerenityPlayer(Character):
     def __init__(self, player_name,
                  character_name=None,
                  age=0,
@@ -98,7 +98,7 @@ class SerenityPlayer(RPPlayer):
         super(SerenityPlayer, self).__init__(player_name, character_name, age, description, stats, money, health)
 
     def __str__(self):
-        print_string = "Player Name: {}\nCharacter Name: {}\nAge: {}\nBack-story: {}\nCurrent Stats: {}".format(
+        print_string = "Character Name: {}\nPlayer Name: {}\nAge: {}\nBack-story: {}\nCurrent Stats: {}".format(
             self.player_name, self.character_name, self.age, self.description, self.get_stats())
         return print_string
 
@@ -203,7 +203,7 @@ class SerenityPlayer(RPPlayer):
 
 # TESTING
 if __name__ == "__main__":
-    from Configuration.Serenity_Config import SerenityStats
+    from Serenity_RPG_Assistant.Configuration import SerenityStats
 
     bayek_stats = SerenityStats(strength=10, agility=6, vitality=6, alertness=8, intelligence=8, willpower=6)
     bayek_health = HealthSystem(total_hitpoints=bayek_stats.vitality+bayek_stats.willpower,
