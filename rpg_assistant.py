@@ -1,10 +1,9 @@
-from OneRing.Simulations.Combat import Combat, VERSION
-from OneRing.Confinguration.OneRing import WeaponStructure, StanceTN
-from OneRing.Character.Hero.Hero import Hero
-from OneRing.Character.BadGuy.BadGuy import BadGuy
-
 
 if __name__ == "__main__":
+    from Configurations.OneRing.Simulations.Combat import Combat, VERSION
+    from Configurations.OneRing.Confinguration.OneRing import WeaponStructure, StanceTN
+    from Configurations.OneRing.Character.Hero.Hero import Hero
+    from Configurations.OneRing.Character.BadGuy.BadGuy import BadGuy
     # TODO: make a (better) command line interface
     # edit here for now
     weapon_type = "Bow"         # Select text from WeaponDatabase

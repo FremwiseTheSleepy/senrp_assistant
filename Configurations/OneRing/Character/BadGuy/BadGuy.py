@@ -1,7 +1,7 @@
 from collections import namedtuple
 from random import randint
 from Player.Player import Player
-from OneRing.Confinguration.OneRing import StanceTN, parse_numbers_from_string_to_list
+from Configurations.OneRing.Confinguration.OneRing import StanceTN, parse_numbers_from_string_to_list
 
 BadGuyStructure = namedtuple('BadGuyStructure', 'attribute_level endurance hate parry armor')
 BadGuyDatabase = {

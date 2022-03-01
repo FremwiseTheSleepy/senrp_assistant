@@ -1,4 +1,4 @@
-from Serenity_RPG_Assistant.Serenity_Config import asset_complication_config, \
+from Configurations.Serenity_RPG_Assistant.Configuration.Serenity_Config import asset_complication_config, \
     SerenityTraitLevel, serenity_bonus_modifier, SerenityStats, SerenitySkills
 
 

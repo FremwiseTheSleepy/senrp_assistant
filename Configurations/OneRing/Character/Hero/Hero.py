@@ -1,9 +1,9 @@
 from random import randint
 from Player.Player import Player
-from OneRing.Confinguration.OneRing import GANDALF_FEAT_DIE_VALUE, SAURON_FEAT_DIE_VALUE, DEFAULT_NUM_FEAT_ROLLS, StanceTN, \
-    roll_success_dice
-from OneRing.Equipment.Weapon import WeaponStructure
-from OneRing.Equipment.Weapon import Weapon
+from Configurations.OneRing.Confinguration.OneRing import GANDALF_FEAT_DIE_VALUE, SAURON_FEAT_DIE_VALUE, \
+    DEFAULT_NUM_FEAT_ROLLS, StanceTN, roll_success_dice
+from Configurations.OneRing.Equipment.Weapon import WeaponStructure
+from Configurations.OneRing.Equipment.Weapon import Weapon
 
 
 class Hero(Player):

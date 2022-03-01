@@ -1,4 +1,4 @@
-from Serenity_RPG_Assistant.Serenity_Config import SerenityWeapon
+from Configurations.Serenity_RPG_Assistant.Configuration.Serenity_Config import SerenityWeapon
 
 
 serenity_hand_to_hand_weapons = {

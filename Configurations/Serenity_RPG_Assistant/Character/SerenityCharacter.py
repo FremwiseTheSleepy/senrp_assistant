@@ -203,7 +203,7 @@ class SerenityPlayer(Character):
 
 # TESTING
 if __name__ == "__main__":
-    from Serenity_RPG_Assistant.Configuration import SerenityStats
+    from Configurations.Serenity_RPG_Assistant.Configuration.Serenity_Config import SerenityStats
 
     bayek_stats = SerenityStats(strength=10, agility=6, vitality=6, alertness=8, intelligence=8, willpower=6)
     bayek_health = HealthSystem(total_hitpoints=bayek_stats.vitality+bayek_stats.willpower,

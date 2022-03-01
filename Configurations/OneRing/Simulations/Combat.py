@@ -1,5 +1,5 @@
-from OneRing.Confinguration.OneRing import process_percentage
-from OneRing.Character.BadGuy.BadGuy import BadGuy
+from Configurations.OneRing.Confinguration.OneRing import process_percentage
+from Configurations.OneRing.Character.BadGuy.BadGuy import BadGuy
 
 # Readme: For general usage, go to bottom of file and modify values, run via "python Combat.py"
 # tested on python 3.6.1

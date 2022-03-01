@@ -1,4 +1,4 @@
-from Serenity_RPG_Assistant.Serenity_Config import SerenityItem
+from Configurations.Serenity_RPG_Assistant.Configuration.Serenity_Config import SerenityItem
 
 
 serenity_tools = {
