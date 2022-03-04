@@ -1,12 +1,12 @@
 from random import randint
-from Player.Player import Player
 from Configurations.OneRing.Confinguration.OneRing import GANDALF_FEAT_DIE_VALUE, SAURON_FEAT_DIE_VALUE, \
     DEFAULT_NUM_FEAT_ROLLS, StanceTN, roll_success_dice
 from Configurations.OneRing.Equipment.Weapon import WeaponStructure
 from Configurations.OneRing.Equipment.Weapon import Weapon
+from Character.Character import Character
 
 
-class Hero(Player):
+class Hero(Character):
     """ Perform tasks that hero can perform """
 
     def __init__(self,
@@ -19,6 +19,7 @@ class Hero(Player):
                  stance=StanceTN.Def):
 
         super(Hero, self).__init__(name)
+        self.name = name
         self.weapon = Weapon(weapon_name, weapon_mods)
         self.weapon_success_dice = weapon_success_dice
         self.num_feat_rolls = DEFAULT_NUM_FEAT_ROLLS + bonus_feat_rolls
@@ -26,6 +27,7 @@ class Hero(Player):
         self.edge_value = self.weapon.edge
         self.damage_value = self.weapon.damage
         self.stance = stance
+        self.inventory = []
 
     def __str__(self):
         output_string = ""
@@ -35,6 +37,29 @@ class Hero(Player):
         output_string += "   Number of feat rolls: {}\n".format(self.num_feat_rolls)
         output_string += "{}".format(self.weapon)
         return output_string
+
+    def get_max_health(self):
+        """
+        get and return the maximum value one or more health pools.
+        :return:
+        """
+        return 0
+
+    def add_to_inventory(self, item_to_add_to_inventory):
+        """
+        Add an item to the inventory
+        :param item_to_add_to_inventory: item to add to inventory
+        :return:
+        """
+
+        self.inventory.append(item_to_add_to_inventory)
+
+    def get_inventory(self):
+        """
+        Return what the character has in their inventory
+        :return:
+        """
+        return self.inventory
 
     def perform_attack_roll(self):
         """

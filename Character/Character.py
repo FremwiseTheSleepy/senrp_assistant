@@ -4,9 +4,8 @@ import abc
 class Character(object):
     __metaclass__ = abc.ABCMeta
 
-    @abc.abstractmethod
     def __init__(self,
-                 character_name="Eeku",
+                 name="E. Ku",
                  age=18,
                  description="Let's go",
                  internal_description="Want's to be a folk singer",
@@ -15,15 +14,16 @@ class Character(object):
                  health=None):
         """
         Character Constructor
-        :param character_name: String, name of character
+        :param name: String, name of character
         :param age: int, usually in earth years, could be arbitrary
         :param description: Info others should know about your character
         :param internal_description: Info only you/DM should know about your character
         :param money: int, some number of currency
-        :param stats: type defined by subclass, stats skills, etc. Should probably be in a dictionary for parseability
+        :param stats: type defined by subclass, stats skills, etc.
+            Should probably be in a dictionary for parse-ability
         :param health: type defined by subclass, could be multiple health/mana/stat pools
         """
-        self.character_name = character_name
+        self.name = name
         self.age = age
         self.description = description
         self.internal_description = internal_description
@@ -48,7 +48,8 @@ class Character(object):
         """
         raise NotImplementedError('Subclasses must define max health')
 
-    def add_to_invetory(self, item_to_add_to_inventory):
+    @abc.abstractmethod
+    def add_to_inventory(self, item_to_add_to_inventory):
         """
         Add an item to the inventory
         :param item_to_add_to_inventory: item to add to inventory
@@ -56,7 +57,8 @@ class Character(object):
         """
         raise NotImplementedError("Subclasses define what adding to the inventory entails")
 
-    def get_invetory(self):
+    @abc.abstractmethod
+    def get_inventory(self):
         """
         Return what the character has in their inventory
         :return:
@@ -75,7 +77,7 @@ class Character(object):
         Name, can get creative if you want.
         :return:
         """
-        return self.character_name
+        return self.name
 
     def set_character_name(self, character_name):
         """
@@ -83,7 +85,7 @@ class Character(object):
         :param character_name: string, name to call this fine specimen
         :return:
         """
-        self.character_name = character_name
+        self.name = character_name
 
     def get_stats(self):
         """

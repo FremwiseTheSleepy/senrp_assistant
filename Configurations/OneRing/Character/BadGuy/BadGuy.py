@@ -1,11 +1,11 @@
 from collections import namedtuple
 from random import randint
-from Player.Player import Player
 from Configurations.OneRing.Confinguration.OneRing import StanceTN, parse_numbers_from_string_to_list
+from Character.Character import Character
 
 BadGuyStructure = namedtuple('BadGuyStructure', 'attribute_level endurance hate parry armor')
 BadGuyDatabase = {
-    # names are taken from page numbers + general location in page top left is a, bottom right b, c, etc.
+    # names are taken from page numbers + general location in page top left is 'a', bottom right 'b', 'c', etc.
     # for parry, use string, one char by itself will assume no shield, specified '+ 0' mostly for readability
     # for armor, U means that attribute bonus is added to protection check
     'bg237a': BadGuyStructure(attribute_level=7, endurance=48, hate=8, parry="5 + 2", armor="4dU"),
@@ -32,13 +32,15 @@ BadGuyDatabase = {
 }
 
 
-class BadGuy(Player):
+class BadGuy(Character):
     """ Perform tasks that bad guys can perform
     @type parry: str
     @type armor: str
     """
     def __init__(self, name):
+
         super(BadGuy, self).__init__(name)
+        self.name = name
         bad_guy_data = BadGuyDatabase.get(self.name)
         if bad_guy_data:
             self.attribute_level, self.endurance, self.hate, self.parry, self.armor = bad_guy_data
@@ -46,9 +48,10 @@ class BadGuy(Player):
             self.attribute_level = 0
             self.endurance = 0
             self.hate = 0
-            self.parry = 0
-            self.armor = 0
+            self.parry = "0"
+            self.armor = "0"
         self.stance = StanceTN.Def
+        self.inventory = []
 
     def __str__(self):
         out_string = " Bad Guy:\n"
@@ -59,6 +62,29 @@ class BadGuy(Player):
         out_string += "Stance TN: {},  ".format(self.stance)
         out_string += "Attribute level: {}\n".format(self.attribute_level)
         return out_string
+
+    def get_max_health(self):
+        """
+        get and return the maximum value one or more health pools.
+        :return:
+        """
+        return 0
+
+    def add_to_inventory(self, item_to_add_to_inventory):
+        """
+        Add an item to the inventory
+        :param item_to_add_to_inventory: item to add to inventory
+        :return:
+        """
+
+        self.inventory.append(item_to_add_to_inventory)
+
+    def get_inventory(self):
+        """
+        Return what the character has in their inventory
+        :return:
+        """
+        return self.inventory
 
     def get_parry(self, shield_present):
         parry_values = parse_numbers_from_string_to_list(self.parry)
