@@ -28,8 +28,6 @@ class StatGroup(object):
     """ a collection of stats """
     def __init__(self, name="Stats", stats_to_add=None, stat_groups_to_add=None):
         """
-
-
         :param name:
         :param stats_to_add:
         :type stats_to_add: tuple of Stats
@@ -40,12 +38,8 @@ class StatGroup(object):
         self.name = name
         self.stats = stats_to_add
 
+    @abc.abstractmethod
     def stat_summation(self):
-        stat_sum = 0
-        if self.stats:
-            for stat in self.stats:
-                stat_sum += stat.value
-
-        return stat_sum
+        raise NotImplementedError("define stat_summation()")
 
 
