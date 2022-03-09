@@ -22,6 +22,11 @@ class SylStats(Stats):
 class SylStatOverallGroup(StatGroup):
     def __init__(self, intellect, psyche, physique, motorics):
         super(SylStatOverallGroup, self).__init__()
+        self.intellect = intellect
+        self.psyche = psyche
+        self.physique = physique
+        self.motorics = motorics
+
         self.stats = {
             'Encyclopedia': SylStats(name='Encyclopedia',
                                      group='Intellect',
@@ -132,6 +137,12 @@ class SylStatOverallGroup(StatGroup):
         string_output += "\nTotal points in stats: {}\n".format(self.stat_summation())
 
         return string_output
+
+    def print_stat_groups(self):
+        print("Intellect: {}, Psyche: {}, Physique: {}, Motorics: {}".format(self.intellect,
+                                                                             self.psyche,
+                                                                             self.physique,
+                                                                             self.motorics))
 
     def stat_summation(self):
         stat_sum = 0
