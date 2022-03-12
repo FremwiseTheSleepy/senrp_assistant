@@ -138,11 +138,22 @@ class SylStatOverallGroup(StatGroup):
 
         return string_output
 
-    def print_stat_groups(self):
-        print("Intellect: {}, Psyche: {}, Physique: {}, Motorics: {}".format(self.intellect,
-                                                                             self.psyche,
-                                                                             self.physique,
-                                                                             self.motorics))
+    def get_stat_group_string(self):
+        return "Intellect: {}, Psyche: {}, Physique: {}, Motorics: {}".format(self.intellect,
+                                                                              self.psyche,
+                                                                              self.physique,
+                                                                              self.motorics)
+
+    def set_stats_to_base_selected(self):
+        for key, stat in self.stats.items():
+            if stat.group == 'Motorics':
+                stat.value = self.motorics
+            elif stat.group == 'Psyche':
+                stat.value = self.psyche
+            elif stat.group == 'Physique':
+                stat.value = self.physique
+            elif stat.group == 'Intellect':
+                stat.value = self.intellect
 
     def stat_summation(self):
         stat_sum = 0
