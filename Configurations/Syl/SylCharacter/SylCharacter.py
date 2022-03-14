@@ -94,7 +94,21 @@ class SylCharacter(Character):
 
         while not exit_requested:
             print(">", end='', flush=True)
-            read_char = msvcrt.getch().decode("utf-8").lower()
+            read_char = msvcrt.getch()
+
+            if ord(read_char) == 0:
+                arrow_key = ord(msvcrt.getch())
+                if arrow_key == 75:
+                    read_char = "<"
+                elif arrow_key == 77:
+                    read_char = ">"
+                elif arrow_key == 80:
+                    read_char = "v"
+                elif arrow_key == 72:
+                    read_char = "^"
+            else:
+                read_char = read_char.decode("utf-8").lower()
+            print("readChar: {}, ordchar: {}".format(read_char, ord(read_char)))
             enter_pressed = (13 == ord(read_char))
             if 'q' == read_char or (enter_pressed and self.base_stats_remaining == 0):
                 if enter_pressed:
@@ -103,7 +117,8 @@ class SylCharacter(Character):
 
             print(read_char)
             error_string = None
-            if read_char not in ('a', 's', 'd', 'f', 'j', 'k', 'l', ';', 'm', 'q') and not enter_pressed:
+            if read_char not in ('a', 's', 'd', 'f', 'j', 'k', 'l', ';', 'm', 'q', '<', '>', 'v', '^') \
+                    and not enter_pressed:
                 error_string = "Invalid Key entered, press 'm'/'h' for menu."
 
             elif enter_pressed:
