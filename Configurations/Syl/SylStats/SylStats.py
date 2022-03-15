@@ -22,10 +22,10 @@ class SylStats(Stats):
 class SylStatOverallGroup(StatGroup):
     def __init__(self, intellect, psyche, physique, motorics):
         super(SylStatOverallGroup, self).__init__()
-        self.intellect = intellect
-        self.psyche = psyche
-        self.physique = physique
-        self.motorics = motorics
+        self.intellect = SylStats(name="Intellect", value=intellect)
+        self.psyche = SylStats(name="Psyche", value=psyche)
+        self.physique = SylStats(name="Physique", value=physique)
+        self.motorics = SylStats(name="Motorics", value=motorics)
 
         self.stats = {
             'Encyclopedia': SylStats(name='Encyclopedia',
@@ -143,6 +143,9 @@ class SylStatOverallGroup(StatGroup):
                                                                               self.psyche,
                                                                               self.physique,
                                                                               self.motorics)
+
+    def get_base_stats(self):
+        return self.intellect, self.psyche, self.physique, self.motorics
 
     def set_stats_to_base_selected(self):
         for key, stat in self.stats.items():

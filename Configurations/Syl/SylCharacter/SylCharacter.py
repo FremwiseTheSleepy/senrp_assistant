@@ -91,11 +91,13 @@ class SylCharacter(Character):
     def base_stats_handle_user_input(self, upper_stat_limit=6):
 
         exit_requested = False
-
+        stats = self.stats.get_base_stats()
+        current_index = 0
         while not exit_requested:
             print(">", end='', flush=True)
             read_char = msvcrt.getch()
 
+            arrow_key = None
             if ord(read_char) == 0:
                 arrow_key = ord(msvcrt.getch())
                 if arrow_key == 75:
@@ -108,77 +110,96 @@ class SylCharacter(Character):
                     read_char = "^"
             else:
                 read_char = read_char.decode("utf-8").lower()
-            print("readChar: {}, ordchar: {}".format(read_char, ord(read_char)))
+
+            if read_char == '<':
+                if current_index == 0:
+                    current_index = len(stats) - 1
+                else:
+                    current_index -= 1
+            elif read_char == '>':
+                if current_index == len(stats) - 1:
+                    current_index = 0
+                else:
+                    current_index += 1
+            elif read_char == '^':
+                if stats[current_index].value < upper_stat_limit and self.base_stats_remaining > 0:
+                    stats[current_index].value += 1
+                    self.base_stats_remaining -= 1
+            elif read_char == 'v':
+                if stats[current_index].value > 1:
+                    stats[current_index].value -= 1
+                    self.base_stats_remaining += 1
+
+            print("{}: {}".format(stats[current_index].name, stats[current_index].value))
             enter_pressed = (13 == ord(read_char))
             if 'q' == read_char or (enter_pressed and self.base_stats_remaining == 0):
                 if enter_pressed:
                     print("Stats confirmed.")
                 break
 
-            print(read_char)
             error_string = None
             if read_char not in ('a', 's', 'd', 'f', 'j', 'k', 'l', ';', 'm', 'q', '<', '>', 'v', '^') \
                     and not enter_pressed:
-                error_string = "Invalid Key entered, press 'm'/'h' for menu."
+                error_string = "{}: Invalid Key entered, press 'm' for menu.".format(read_char)
 
             elif enter_pressed:
                 error_string = "Points still remain, consume remaining points and hit enter to confirm."
 
-            elif self.base_stats_remaining == 0 and read_char in ('a', 's', 'd', 'f'):
+            elif self.base_stats_remaining == 0 and read_char in ('a', 's', 'd', 'f', '^'):
                 error_string = "Out of available points, press 'm' for menu"
 
             elif read_char == 'a':
-                if self.stats.intellect < upper_stat_limit:
-                    self.stats.intellect += 1
+                if self.stats.intellect.value < upper_stat_limit:
+                    self.stats.intellect.value += 1
                     self.base_stats_remaining -= 1
                 else:
                     error_string = "Intellect is maxed out. 'm' for menu"
 
             elif read_char == 's':
-                if self.stats.psyche < upper_stat_limit:
-                    self.stats.psyche += 1
+                if self.stats.psyche.value < upper_stat_limit:
+                    self.stats.psyche.value += 1
                     self.base_stats_remaining -= 1
                 else:
                     error_string = "Psyche is maxed out. 'm' for menu"
 
             elif read_char == 'd':
-                if self.stats.physique < upper_stat_limit:
-                    self.stats.physique += 1
+                if self.stats.physique.value < upper_stat_limit:
+                    self.stats.physique.value += 1
                     self.base_stats_remaining -= 1
                 else:
                     error_string = "Physique is maxed out. 'm' for menu"
 
             elif read_char == 'f':
-                if self.stats.motorics < upper_stat_limit:
-                    self.stats.motorics += 1
+                if self.stats.motorics.value < upper_stat_limit:
+                    self.stats.motorics.value += 1
                     self.base_stats_remaining -= 1
                 else:
                     error_string = "Motorics is maxed out. 'm' for menu"
 
             elif read_char == 'j':
-                if self.stats.intellect > 1:
-                    self.stats.intellect -= 1
+                if self.stats.intellect.value > 1:
+                    self.stats.intellect.value -= 1
                     self.base_stats_remaining += 1
                 else:
                     error_string = "Minimum Intellect value is 1."
 
             elif read_char == 'k':
-                if self.stats.psyche > 1:
-                    self.stats.psyche -= 1
+                if self.stats.psyche.value > 1:
+                    self.stats.psyche.value -= 1
                     self.base_stats_remaining += 1
                 else:
                     error_string = "Minimum Psyche value is 1."
 
             elif read_char == 'l':
-                if self.stats.physique > 1:
-                    self.stats.physique -= 1
+                if self.stats.physique.value > 1:
+                    self.stats.physique.value -= 1
                     self.base_stats_remaining += 1
                 else:
                     error_string = "Minimum Physique value is 1."
 
             elif read_char == ';':
-                if self.stats.motorics > 1:
-                    self.stats.motorics -= 1
+                if self.stats.motorics.value > 1:
+                    self.stats.motorics.value -= 1
                     self.base_stats_remaining += 1
                 else:
                     error_string = "Minimum Motoric value is 1."
@@ -204,17 +225,17 @@ class SylCharacter(Character):
         while self.level_points_remaining != 0:
             print("> ", end='', flush=True)
             stat_value = self.stats.stats[dict_list[index]].value
-            if stat_value == 1:
+            if stat_value.value == 1:
                 point_text = "point"
             else:
                 point_text = "points"
-            print("{}: {} {}".format(dict_list[index], stat_value, point_text) +
+            print("{}: {} {}".format(dict_list[index], stat_value.value, point_text) +
                   " " * 20 + chr(8)*60, end='', flush=True)
             read_char = msvcrt.getch().decode("utf-8").lower()
 
             if ' ' == read_char:
                 self.level_points_remaining -= 1
-                self.stats.stats[dict_list[index]].value += 1
+                self.stats.stats[dict_list[index]].value.value += 1
             elif 'a' == read_char:
                 if index == 0:
                     index = len(dict_list) - 1
