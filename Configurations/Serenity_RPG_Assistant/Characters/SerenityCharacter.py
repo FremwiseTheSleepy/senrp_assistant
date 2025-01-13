@@ -88,6 +88,9 @@ class HealthSystem(object):
 
 
 class SerenityPlayer(Character):
+    """
+    Defines Serenity types
+    """
     def __init__(self, player_name,
                  character_name=None,
                  age=0,
@@ -98,7 +101,7 @@ class SerenityPlayer(Character):
         super(SerenityPlayer, self).__init__(player_name, character_name, age, description, stats, money, health)
 
     def __str__(self):
-        print_string = "Character Name: {}\nPlayer Name: {}\nAge: {}\nBack-story: {}\nCurrent Stats: {}".format(
+        print_string = "Characters Name: {}\nPlayer Name: {}\nAge: {}\nBack-story: {}\nCurrent Stats: {}".format(
             self.player_name, self.character_name, self.age, self.description, self.get_stats())
         return print_string
 

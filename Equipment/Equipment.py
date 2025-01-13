@@ -22,4 +22,4 @@ class Equipment(object):
         When someone prints this character, what do they see? Recommend use as documentation to what is available
         :return:
         """
-        raise NotImplementedError('Subclasses must define how to layout Character printing')
+        raise NotImplementedError('Subclasses must define how to layout Characters printing')

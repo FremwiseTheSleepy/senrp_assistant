@@ -1,0 +1,13 @@
+{
+  "name": "eeku",
+  "weapon_name": "Bow",
+  "weapon_mods": [0, 0, 0, 0],
+  "weapon_success_dice": 2,
+  "bonus_feat_rolls": 0,
+  "damage_mod": 0,
+  "edge_mod": 1,
+  "injury_mod": 0,
+  "hit_mod": 0,
+  "player_damage": 3,
+  "stance": 12
+}

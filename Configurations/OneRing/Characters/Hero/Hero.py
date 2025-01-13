@@ -1,9 +1,10 @@
+
 from random import randint
-from Configurations.OneRing.Confinguration.OneRing import GANDALF_FEAT_DIE_VALUE, SAURON_FEAT_DIE_VALUE, \
-    DEFAULT_NUM_FEAT_ROLLS, StanceTN, roll_success_dice
+from Configuration.OneRing import GANDALF_FEAT_DIE_VALUE, SAURON_FEAT_DIE_VALUE, \
+    DEFAULT_NUM_FEAT_ROLLS, roll_success_dice
 from Configurations.OneRing.Equipment.Weapon import WeaponStructure
 from Configurations.OneRing.Equipment.Weapon import Weapon
-from Character.Character import Character
+from Configurations.OneRing.Characters.Character import Character, StanceTN
 
 
 class Hero(Character):
@@ -28,6 +29,21 @@ class Hero(Character):
         self.damage_value = self.weapon.damage
         self.stance = stance
         self.inventory = []
+
+        def __init__(self, character_info_dict):
+
+            super(Hero, self).__init__(name)
+            self.name = character_info_dict['name']
+            self.weapon = Weapon(character_info_dict['weapon_name'],
+                                 character_info_dict['weapon_mods'])
+
+            self.weapon_success_dice = weapon_success_dice
+            self.num_feat_rolls = DEFAULT_NUM_FEAT_ROLLS + bonus_feat_rolls
+            self.player_damage = player_damage
+            self.edge_value = self.weapon.edge
+            self.damage_value = self.weapon.damage
+            self.stance = stance
+            self.inventory = []
 
     def __str__(self):
         output_string = ""

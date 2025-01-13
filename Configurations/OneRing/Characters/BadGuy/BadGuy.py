@@ -1,7 +1,7 @@
+
 from collections import namedtuple
 from random import randint
-from Configurations.OneRing.Confinguration.OneRing import StanceTN, parse_numbers_from_string_to_list
-from Character.Character import Character
+from Configurations.OneRing.Characters.Character import Character, StanceTN
 
 BadGuyStructure = namedtuple('BadGuyStructure', 'attribute_level endurance hate parry armor')
 BadGuyDatabase = {
@@ -41,7 +41,7 @@ class BadGuy(Character):
 
         super(BadGuy, self).__init__(name)
         self.name = name
-        bad_guy_data = BadGuyDatabase.get(self.name)
+        bad_guy_data = None  # BadGuyDatabase.get(self.name)
         if bad_guy_data:
             self.attribute_level, self.endurance, self.hate, self.parry, self.armor = bad_guy_data
         else:
@@ -87,7 +87,7 @@ class BadGuy(Character):
         return self.inventory
 
     def get_parry(self, shield_present):
-        parry_values = parse_numbers_from_string_to_list(self.parry)
+        parry_values = self.parse_numbers_from_string_to_list(self.parry)
         parry_output = parry_values[0]
         if shield_present and len(parry_values) == 2:
             parry_output += parry_values[1]
@@ -108,3 +108,12 @@ class BadGuy(Character):
         if armor_parse[-1].upper() == 'U':
             armor_value += self.attribute_level
         return armor_value
+
+    def parse_numbers_from_string_to_list(self, string_to_parse):
+        """
+        Parse a string into a list of numbers: e.g. "This 1 string has 2 numbers." => [1,2]
+        :param string_to_parse: str, input string to parse
+        :return: list of ints, all numeric values found within string.
+        """
+        # parse string into parts, add integer value to list if determined to be integer
+        return [int(string_integer) for string_integer in string_to_parse.split() if string_integer.isdigit()]

@@ -1,5 +1,5 @@
 try:
-    import msvcrt
+    import click
     from Character.Character import Character
     from Configurations.Syl.SylStats.SylStats import SylStatOverallGroup
 except ModuleNotFoundError:
@@ -14,7 +14,10 @@ except ModuleNotFoundError:
 
 
 class SylCharacter(Character):
-    BASE_LUCK = 10
+    """
+    Defines Syl specific aspects of a character
+    """
+    BASE_LUCK = 10   # luck based health system, can choose to burn a luck or take a serious failure
     MAX_INVENTORY_ITEMS = 10
     STARTING_STAT_POINTS = 8  # minimum 1 for each
 
@@ -42,7 +45,6 @@ class SylCharacter(Character):
                                            age=age,
                                            description=description,
                                            internal_description=internal_description,
-                                           money=money,
                                            stats=stats,
                                            health=health)
         # base class mods
@@ -52,9 +54,12 @@ class SylCharacter(Character):
         if self.stats is None:
             self.stats = SylStatOverallGroup(1, 1, 1, 1)
         self.create_character()
+        self.money = money
+        self.starting_level = starting_level
 
     def __str__(self):
         character_string = "Name: {}\n  Stats: {}".format(self.name, self.stats)
+        return character_string
 
     def get_max_health(self):
         return self.BASE_LUCK
@@ -74,7 +79,7 @@ class SylCharacter(Character):
             pass
 
     def intro_stats_menu(self):
-        print("")
+        print(f'\n===============\nWelcome {self.name}!\n===============')
         print("Intellect: press 'a' to increase, 'j' to decrease")
         print("Psyche: Press 's' to increase, 'k' to decrease")
         print("Physique: Press 'd' to increase, 'l' to decrease")
@@ -95,21 +100,22 @@ class SylCharacter(Character):
         current_index = 0
         while not exit_requested:
             print(">", end='', flush=True)
-            read_char = msvcrt.getch()
+            read_char = click.getchar()
 
-            arrow_key = None
-            if ord(read_char) == 0:
-                arrow_key = ord(msvcrt.getch())
-                if arrow_key == 75:
-                    read_char = "<"
-                elif arrow_key == 77:
-                    read_char = ">"
-                elif arrow_key == 80:
-                    read_char = "v"
-                elif arrow_key == 72:
-                    read_char = "^"
+            if read_char == "àK":
+                read_char = "<"
+            elif read_char == "àM":
+                read_char = ">"
+            elif read_char == "àP":
+                read_char = "v"
+            elif read_char == "àH":
+                read_char = "^"
             else:
-                read_char = read_char.decode("utf-8").lower()
+                print(f'read_char: {read_char}')
+                try:
+                    read_char = read_char.decode("utf-8").lower()
+                except (UnicodeDecodeError, AttributeError):
+                    print(f'read_char: {read_char}')
 
             if read_char == '<':
                 if current_index == 0:
@@ -212,16 +218,54 @@ class SylCharacter(Character):
             else:
                 self.print_stats()
 
+    def create_character(self):
+        """
+        Character Creation Logic
+        :return: None
+        """
+
+        # State machine locals
+        define_base_stats = 0
+        add_level_point_to_stat = 1
+        finished_creation = 2
+        state = define_base_stats
+
+        while state != finished_creation:
+            # Continue until character creation is finished
+
+            if state == define_base_stats:
+                # Base Stat setup
+
+                self.define_base_stats()
+                state = add_level_point_to_stat
+
+            elif state == add_level_point_to_stat:
+                # Bonus Stat Setup
+                if self.add_level_point_to_stat():
+                    print("Completed Characters startup")
+                    break
+
     def define_base_stats(self):
+        """
+        Performs base stat definitions during character creation
+        :return: None
+        """
         self.intro_stats_menu()
         self.base_stats_handle_user_input()
         self.stats.set_stats_to_base_selected()
 
     def add_level_point_to_stat(self):
-
+        """
+        Add a boost to a single stat. Can be during character creation or levelling
+        :return: True when successfully finished
+        """
         dict_list = [key for key in self.stats.stats.keys()]
         index = 0
-        print("Select stat to boost (a, f), space to select")
+        left_character = 'a'
+        right_character = 'd'
+        select_character = "Enter"
+
+        print(f'>>> Select stat to boost ({left_character}, {right_character}), "{select_character}" to select <<<')
         while self.level_points_remaining != 0:
             print("> ", end='', flush=True)
             stat_value = self.stats.stats[dict_list[index]].value
@@ -231,37 +275,45 @@ class SylCharacter(Character):
                 point_text = "points"
             print("{}: {} {}".format(dict_list[index], stat_value.value, point_text) +
                   " " * 20 + chr(8)*60, end='', flush=True)
-            read_char = msvcrt.getch().decode("utf-8").lower()
 
-            if ' ' == read_char:
+            read_char = click.getchar()
+            enter_pressed = False
+            try:
+
+                if read_char == "àK":  # Left
+                    read_char = left_character
+                elif read_char == "àM":  # Right
+                    read_char = right_character
+                elif read_char == "àH":  # Up
+                    read_char = left_character
+                elif read_char == "àP":  # Down
+                    read_char = right_character
+                else:
+                    enter_pressed = (13 == ord(read_char))
+                    if not enter_pressed:
+                        read_char = read_char.decode("utf-8").lower()
+            except (UnicodeDecodeError, AttributeError, TypeError):
+                read_char = ''
+                enter_pressed = False
+
+            if enter_pressed:
                 self.level_points_remaining -= 1
                 self.stats.stats[dict_list[index]].value.value += 1
-            elif 'a' == read_char:
+            elif left_character == read_char:
                 if index == 0:
                     index = len(dict_list) - 1
                 else:
                     index -= 1
-            elif 'f' == read_char:
+            elif right_character == read_char:
                 if index == len(dict_list) - 1:
                     index = 0
                 else:
                     index += 1
+
         return True
 
-    def create_character(self):
-        define_base_stats = 0
-        add_level_point_to_stat = 1
-        finished_creation = 2
-        state = define_base_stats
-        while state != finished_creation:
-            if state == define_base_stats:
-                self.define_base_stats()
-                state = add_level_point_to_stat
-            elif state == add_level_point_to_stat:
-                if self.add_level_point_to_stat():
-                    print("completed Character startup")
-                    break
-
+    def perform_attack_roll(self):
+        pass
 
 if __name__ == '__main__':
     syl_character_test = SylCharacter(name="Beeku", description="Eeku's pet bird")

@@ -1,35 +1,21 @@
 """
-Base class for Characters; this PC or NPC
+Base class for OneRing Characters; this PC or NPC
 """
 import abc
-import os
-import json
+from Character.Character import Character
 
 
-def load_character_data(project_configuration_path, character_filename="default_character.json"):
+class StanceTN:
     """
-    Places the python path to point at the appropriate file location for pulling in data.
-    :param project_configuration_path: string, path to where filename located
-    :param character_filename: string, name of character data file to pull in
-    :return:
+    Definition for Character stances, defensive stats based on
     """
-    character_filename = os.path.join(project_configuration_path, character_filename)
-    character_file_handle = open(character_filename, 'r')
-    try:
-
-        character_data = json.loads(character_file_handle.read())
-    except json.decoder.JSONDecodeError:
-        print("\nError reading in file from JSON\n")
-        raise
-
-    return character_data
+    Forward = 6
+    Open = 9
+    Def = 12
+    Rearward = 12
 
 
-class Character(object):
-    """
-    Defines base character characteristics across all configurable types (i.e. something that is shared across PCs and
-    NPCs across all RPGs; e.g. name of character.
-    """
+class Character(Character):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self,
@@ -49,6 +35,7 @@ class Character(object):
             Should probably be in a dictionary for parse-ability
         :param health: type defined by subclass, could be multiple health/mana/stat pools
         """
+        super(Character, self).__init__(name)
         self.name = name
         self.age = age
         self.description = description
@@ -87,14 +74,6 @@ class Character(object):
         """
         Return what the character has in their inventory
         :return:
-        """
-        raise NotImplementedError("Subclasses define what returning the inventory entails")
-
-    @abc.abstractmethod
-    def perform_attack_roll(self):
-        """
-        Calculates all aspects of attack roll.
-        :return: Attack information. See specific implementation for return value.
         """
         raise NotImplementedError("Subclasses define what returning the inventory entails")
 
@@ -139,14 +118,3 @@ class Character(object):
 
         :return:
         """
-
-    def process_percentage(self, name, count, total):
-        """
-        Returns str containing input string and the associated percentage based on count & total inputs.
-        :param name: str, contains text to indicate what percent means
-        :param count: numeric, numerator, i.e. number of "successes" out of all attempts
-        :param total: numeric, denominator, i.e. number of "attempts"
-        :return: str, text indicating what percent means followed by percent, separated by ':'
-        """
-        return "{}: {:0.3f}".format(name, float(count) / total * 100)
-

@@ -129,6 +129,10 @@ class SylStatOverallGroup(StatGroup):
         }
 
     def __str__(self):
+        """
+        Defines how the character class is represented in console output
+        :return:
+        """
         string_output = "\n"
         if self.stats:
             for key, val in self.stats.items():
@@ -139,15 +143,24 @@ class SylStatOverallGroup(StatGroup):
         return string_output
 
     def get_stat_group_string(self):
-        return "Intellect: {}, Psyche: {}, Physique: {}, Motorics: {}".format(self.intellect,
-                                                                              self.psyche,
-                                                                              self.physique,
-                                                                              self.motorics)
+        """
+        Returns string of all base stats
+        :return:
+        """
+        return "{}, {}, {}, {}".format(self.intellect, self.psyche, self.physique, self.motorics)
 
     def get_base_stats(self):
+        """
+        Returns tuple of all base stats
+        :return: tuple of strings
+        """
         return self.intellect, self.psyche, self.physique, self.motorics
 
     def set_stats_to_base_selected(self):
+        """
+
+        :return:
+        """
         for key, stat in self.stats.items():
             if stat.group == 'Motorics':
                 stat.value = self.motorics
@@ -162,7 +175,7 @@ class SylStatOverallGroup(StatGroup):
         stat_sum = 0
         if self.stats:
             for key, val in self.stats.items():
-                stat_sum += val.value
+                stat_sum += val.value.value   # Gross, change the name of the structure somewhere
         return stat_sum
 
 
